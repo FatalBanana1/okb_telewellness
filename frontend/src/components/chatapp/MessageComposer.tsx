@@ -19,7 +19,7 @@ const MessageComposer: React.FC = () => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const isAUdio = useRef<boolean>(false);
+  const [isAudio, setIsAudio] = useState<boolean>(false);
 
   useEffect(() => {
     const { psych_id, psych_name, patient_id, patient_name } = router.query;
@@ -60,7 +60,8 @@ const MessageComposer: React.FC = () => {
             recipientId: participants[1],
             photoURL,
             deletedByPatient: false,
-            deletedByPsych: false
+            deletedByPsych: false,
+            isAudio: isAudio
           });
           console.log("Message sent");
         } catch (e) {
@@ -75,7 +76,8 @@ const MessageComposer: React.FC = () => {
             recipientId: participants[0],
             photoURL,
             deletedByPatient: false,
-            deletedByPsych: false
+            deletedByPsych: false,
+            isAudio: isAudio
           });
           console.log("Message sent");
         } catch (e) {
@@ -129,6 +131,8 @@ const MessageComposer: React.FC = () => {
       }
 
       setMessage('');
+      setAudioUrl(null);
+      setIsAudio(false);
     }
   };
 
@@ -201,6 +205,7 @@ const MessageComposer: React.FC = () => {
         if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
           mediaRecorderRef.current.stop();
           setIsRecording(false);
+          setIsAudio(true);
         }
       }
     };
@@ -216,6 +221,7 @@ const MessageComposer: React.FC = () => {
               type="button"
               onClick={() => {
                 setAudioUrl(null);
+                setIsAudio(false);
                 setMessage('');
               }}
               className="ml-2 rounded-full bg-gray-500 text-white p-1 h-8 w-8 flex items-center justify-center"
@@ -240,10 +246,21 @@ const MessageComposer: React.FC = () => {
         <button
           type="button"
           onClick={toggleRecording}
-          className={`rounded-full text-white font-bold px-2 mx-4 my-2 font-montserrat ${isRecording ? 'bg-red-500' : ''}`}
+          className={`rounded-full text-white font-bold p-2 mx-4 my-2 font-montserrat flex items-center justify-center ${isRecording ? 'bg-red-500' : ''}`}
           style={{ backgroundColor: isRecording ? '#FF0000' : '#195BA5' }}
+          title={isRecording ? 'Stop recording' : 'Start voice recording'}
         >
-          {isRecording ? 'Stop' : 'Voice'}
+          {isRecording ? (
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="6" y="6" width="12" height="12" rx="2" ry="2"></rect>
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="22"></line>
+            </svg>
+          )}
         </button>
 
         <button
