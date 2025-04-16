@@ -32,7 +32,7 @@ const FilterCard = ({ name, username, created, active, isChecked, onCheckChange,
               <input type="checkbox" className="checkbox" checked={isChecked} onChange={handleOnChange} />
             </div>
             <div style={{ width: "135px", marginLeft: "20px" }}>{name}</div>
-            <div style={{ width: "0px", marginLeft: "10px" }}>
+            <div style={{ width: "300px", marginLeft: "10px" }}>
             {status && <StatusIcon status={status} />} {/* Only render if status is not empty */}
             {status !== "" && <button 
               onClick={() => {
@@ -42,9 +42,9 @@ const FilterCard = ({ name, username, created, active, isChecked, onCheckChange,
               View Profile
           </button>}
           </div>
-            <div style={{ width: "0px", marginLeft: "90px" }}>{username}</div>
-            <div style={{ width: "0px", marginLeft: "360px" }}>{created}</div>
-            <div style={{ width: "0px", marginLeft: "360px" }}>{active}</div>
+            <div style={{ width: "150px", marginLeft: "180px" }}>{username}</div>
+            <div style={{ width: "150px", marginLeft: "520px" }}>{created}</div>
+            <div style={{ width: "150px", marginLeft: "560px" }}>{active}</div>
           </div>
         </div>
       </div>

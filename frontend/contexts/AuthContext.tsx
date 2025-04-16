@@ -25,6 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         // Check if user is available and navigate to dashboard if so
         if (user) {
+          console.log(router.pathname)
           if (user.userType == "psychiatrist") {
             if (router.pathname == "/psych_dashboard" || router.pathname == `/psychiatrist/[psychiatrist_id]/psych_dashboard`)
               router.push(`/psychiatrist/${user.uid}/psych_dashboard`);
