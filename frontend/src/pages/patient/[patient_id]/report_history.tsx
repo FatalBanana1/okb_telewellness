@@ -195,9 +195,21 @@ const ReportList: React.FC = () => {
             {/* Display the psychiatrist's information here */}
             <div className={`card card-side flex flex-col lg:flex-row justify-center lg:justify-between items-center lg:items-start gap-2.5 rounded-lg bg-[${okb_colors.white}] shadow-[0_0px_5px_0px_rgb(0,0,0,0.15)] gap-x-6 hover:brightness-90 p-6 w-full`}>
               <div className={`flex items-center justify-center flex-shrink-0 mb-4 lg:mb-0`}>
-                <div style={{ backgroundColor: colors.okb_blue, objectFit: "cover" }} className={`w-36 h-36 text-6xl font-normal text-white flex items-center justify-center`}>
-                  {psychiatrist.firstName?.charAt(0).toUpperCase()}
-                </div>
+              <div className="flex-shrink-0">
+        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-md bg-gray-200 overflow-hidden">
+          {psychiatrist.profile_pic ? (
+            <img
+              src={psychiatrist.profile_pic}
+              alt={`${psychiatrist?.firstName || ''} ${psychiatrist?.lastName || ''}`}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full text-lg font-semibold text-gray-500">
+              {psychiatrist?.firstName?.charAt(0)?.toUpperCase() || '?'}
+            </div>
+          )}
+        </div>
+      </div>
               </div>
               <div className={`flex flex-col flex-1 gap-4 w-full h-auto`}>
                 {/* Grid (to enable easier organization of columns) w/ psychiatrist name + buttons */}

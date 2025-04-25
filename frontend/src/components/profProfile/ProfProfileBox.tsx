@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchDocumentId, fetchPatientDetails, fetchProfessionalData } from '../../../firebase/fetchData';
 import { IPsychiatrist } from '../../schema';
+import { IAppointment } from '../../schema';
 import Availability from './Availability';
 import Image from 'next/image';
 import Link from '../../assets/link.svg';
@@ -24,6 +25,8 @@ import colors from '@/colors';
 import dynamic from "next/dynamic";
 import DoctorIcon from '@/assets/doctor_icon.svg';
 import SimilarPsychiatristsDisplay from './SimilarPsychiatrists';
+import { AuthService } from '../../../calendly/AuthService';
+import { createAppointment } from '../../../firebase/IAppointment';
 const InlineWidget = dynamic(() => import("react-calendly").then(mod => mod.InlineWidget), { ssr: false });
 
 // interface ProfProfileProps {
@@ -216,12 +219,43 @@ const ProfProfileBox = () => {
         }
     };
 
+    const setupCalendlyMonitoring = () => {
+        // Listen for Calendly's message about successful scheduling
+        window.addEventListener('message', async event => {
+          if (event.data.event === 'calendly.event_scheduled') {
+            // The event_uri should be available in the message
+            const eventPayload = event.data.payload;
+            // console.log(eventPayload);
+            const token = AuthService.getAuthToken()?.access_token as string;
+            // console.log(token);
+            const scheduledEvent = await AuthService.getEvent(eventPayload.event.uri, token as string);
+            console.log("event scheduled", scheduledEvent);
+
+            const start_time_as_timestamp = Timestamp.fromDate(new Date(scheduledEvent.resource.start_time));
+            const end_time_as_timestamp = Timestamp.fromDate(new Date(scheduledEvent.resource.end_time));
+
+            const appointment: IAppointment = {
+              availId: '',
+              appointId: '',
+              profId: professional?.uid as string,
+              startTime: start_time_as_timestamp,
+              endTime: end_time_as_timestamp,
+              patientId: user?.uid as string,
+            };
+            
+            const newAppointment = await createAppointment(appointment);
+            console.log('Appointment added with ID: ', newAppointment.appointId);
+          }
+        });
+      };
+
     const handleBookAppointment = (event: React.MouseEvent) => {
         if (!user) {
             event.preventDefault();
             setShowPopup(true);
         } else {
             setShowBooking(true);
+            setupCalendlyMonitoring();
         }
     };
 
@@ -313,6 +347,16 @@ const ProfProfileBox = () => {
                             <span>Save Psychiatrist</span>
                         </div>
                     </button>
+                    {user && user.userType === 'patient' && (
+                        <button 
+                            onClick={handleReport}
+                            className="flex-1 py-3 border border-red-500 text-red-500 rounded-lg font-montserrat hover:bg-gray-50 transition flex items-center justify-center gap-2"
+                        >
+                            <div className="flex items-center justify-center gap-2">
+                                <span>Report</span>
+                            </div>
+                        </button>
+                    )}
                 </div>
 
                 {/* About Section */}
@@ -383,8 +427,9 @@ const ProfProfileBox = () => {
                             placeholder="Please provide a detailed description of your situation here."
                             value={reportText}
                             onChange={handleReportTextChange}
+                            style={textareaStyle}
                         />
-                        <div className="flex justify-end gap-4 mt-4">
+                        <div style={buttonsContainerStyle}>
                             <Cancel onClick={handleCloseReport} className="cursor-pointer" />
                             <Submit onClick={handleSubmitReport} className="cursor-pointer" />
                         </div>
@@ -394,14 +439,14 @@ const ProfProfileBox = () => {
 
             {showSuccessPopup && (
                 <div style={overlayStyle}>
-                    <div style={popupStyle}>
+                    <div style={{ ...popupStyle, gap: '12px' }}>
                         <CheckCircle className="mb-4" />
-                        <div className="text-center">
-                            <h3 className="font-montserrat font-bold mb-4">
+                        <div style={{ display: 'inline-flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', gap: 14 }}>
+                            <h3 className="font-montserrat font-bold mb-4 text-center">
                                 You have successfully reported Dr. {professional?.firstName} {professional?.lastName}.
                             </h3>
-                            <p className="font-montserrat text-sm mb-4">
-                                Dr. {professional?.firstName} {professional?.lastName}'s profile will be removed from your view and you will now be redirected back to the list of available psychiatrists. If you'd like to access your reported psychiatrists, check out the report section in your profile.
+                            <p className="font-montserrat text-sm mb-4 text-center">
+                                You will now be redirected back to the list of available psychiatrists. If you'd like to access your reported psychiatrists, check out the report section in your profile.
                             </p>
                             <Continue onClick={handleContinue} className="cursor-pointer" />
                         </div>
