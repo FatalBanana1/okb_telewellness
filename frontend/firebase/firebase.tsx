@@ -45,6 +45,7 @@ const logInWithGoogle = async () => {
     } else {
       const url = AuthService.getAuthorizationUrl();
       router.push(url);
+
     }
   }
   catch (err) {

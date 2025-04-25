@@ -4,10 +4,11 @@ import React, { useEffect, useState } from "react";
 import { auth, db } from '../../../firebase/firebase'
 import colors from "@/colors";
 import { collection, getDocs, query, where } from "firebase/firestore";
+import {BlobManager} from "./BlobManager";
 
 const MessageItem: React.FC<{ message: any }> = ({ message }) => {
   // Extract necessary props
-  const { text, uid, photoURL, createdAt } = message;
+  const { text, uid, photoURL, createdAt, isAudio } = message;
   const createdAtDate = createdAt?.toDate(); //TODO this is causing issues when sending messages
   const month = createdAtDate?.toLocaleString('default', { month: 'long' })
   const day = createdAtDate?.getDate()
@@ -17,6 +18,27 @@ const MessageItem: React.FC<{ message: any }> = ({ message }) => {
   // Check to see if the message is a message the user sent or an incoming message.
   const messageClass = uid === auth.currentUser?.uid ? 'sent' : 'received';
   const [firstName, setFirstName] = useState("");
+  // Add state to store the audio URL
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+
+  // Handle audio conversion when the message is an audio message
+  useEffect(() => {
+    // Only process if isAudio is true and text exists
+    if (isAudio && text) {
+      try {
+        const audioBlob = BlobManager.stringToBlob(text);
+        const url = URL.createObjectURL(audioBlob);
+        setAudioUrl(url);
+        
+        // Clean up function to revoke the object URL when the component unmounts
+        return () => {
+          URL.revokeObjectURL(url);
+        };
+      } catch (error) {
+        console.error('Error converting text to audio:', error);
+      }
+    }
+  }, [isAudio, text]);
 
   useEffect(() => {
     const fetchName = async () => {
@@ -41,7 +63,11 @@ const MessageItem: React.FC<{ message: any }> = ({ message }) => {
         <div className={`message-item ${messageClass} flex-col mt-4 page-background`}>
           <div id="text_img" className="flex justify-end items-end gap-4 m-2 mr-4 md:mr-8">
             <div id="text" className="inline-flex p-4 gap-[10px] rounded-t-[15px] rounded-bl-[15px] border-[2px] bg-[#519AEB] border-[#519AEB] max-w-200 md:max-w-xs lg:max-w-sm">
-              <p className={`font-montserrat text-[16px] text-[#FFFDFD]`}>{text}</p>
+              {isAudio && audioUrl ? (
+                <audio controls src={audioUrl} className="max-w-full" />
+              ) : (
+                <p className={`font-montserrat text-[16px] text-[#FFFDFD]`}>{text}</p>
+              )}
             </div>
             {/* <img src={photoURL} className="w-[30px] h-[30px] rounded-full" /> */}
             <div style={{ backgroundColor: colors.okb_blue, objectFit: "cover" }} className={`w-[30px] h-[30px] rounded-full text-base font-normal text-white flex items-center justify-center`}>
@@ -64,7 +90,11 @@ const MessageItem: React.FC<{ message: any }> = ({ message }) => {
               {firstName.charAt(0).toUpperCase()}
             </div>
             <div id="text" className='inline-flex p-4 gap-[10px] border-[2px] rounded-t-[15px] rounded-br-[15px] border-[#519AEB] max-w-200 md:max-w-xs lg:max-w-sm'>
-              <p className="font-montserrat">{text}</p>
+              {isAudio && audioUrl ? (
+                <audio controls src={audioUrl} className="max-w-full" />
+              ) : (
+                <p className="font-montserrat">{text}</p>
+              )}
             </div>
           </div>
           <div id="timestamp" className=" font-montserrat text-[12px] italic font-normal text-left ml-[46px] md:ml-[64px]" style={{ color: okb_colors.med_gray }}>

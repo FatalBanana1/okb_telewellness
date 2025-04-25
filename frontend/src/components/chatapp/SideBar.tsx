@@ -58,7 +58,7 @@ const Sidebar: React.FC = () => {
             <p className='text-[16px] font-montserrat font-semibold'>Unread Messages</p>
             <button onClick={toggleUnreadMessagesVisibility}>{showUnreadMessages ? <ChevronUp color={okb_colors.white} /> : <ChevronDown color={okb_colors.white} />}</button>
           </div>
-          <div className='overflow-scroll'>
+          <div className='overflow-y-auto'>
             {showUnreadMessages && <ConversationList read={false} searchInput={searchTerm} selectedConversationId={selectedConversationId} onSelectConversation={handleSelectConversation} conversations={[]} />}
           </div>
         </div>
@@ -69,15 +69,14 @@ const Sidebar: React.FC = () => {
             <p className='text-[16px] font-montserrat font-semibold'>All Messages</p>
             <button onClick={toggleAllMessagesVisibility}>{showAllMessages ? <ChevronUp color={okb_colors.white} /> : <ChevronDown color={okb_colors.white} />}</button>
           </div>
-          <div className='overflow-scroll'>
+          <div className='overflow-y-auto'>
             {showAllMessages && <ConversationList read={true} searchInput={searchTerm} selectedConversationId={selectedConversationId} onSelectConversation={handleSelectConversation} conversations={[]} />}
           </div>
         </div>
       </div>
 
-    </div >
+    </div>
   );
 };
 
 export default Sidebar;
-
