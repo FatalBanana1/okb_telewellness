@@ -531,8 +531,8 @@ const ChatArea = () => {
     return (
       <div className="chat-area flex flex-col h-screen page-background">
         <NameArea name={displayName} credentials="Credentials" role={role} />
-        <div className="flex-grow overflow-scroll">
-          <div className='h-full overflow-scroll'><MessageList /></div>
+        <div className="flex-grow overflow-y-auto">
+          <div className='h-full overflow-y-auto'><MessageList /></div>
         </div>
         <MessageComposer />
       </div>
