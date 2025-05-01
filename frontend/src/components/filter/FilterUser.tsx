@@ -19,15 +19,18 @@ export interface UserType {
     username: string;
     id: string;
     status: 'pending' | 'approved' | '';
+    email: string; 
+    // Additional fields for psychiatrists
+    availability?: string;
+    language?: string;
+    gender?: string;
 }
 
 // Function to fetch the psychiatrist's status
 const fetchPsychiatristStatus = async (psychiatristUID: string) => {
     const documentId = await fetchDocumentId("psychiatrists", psychiatristUID);
-    // console.log("UID IS: " + psychiatristUID + " DOCID IS: " + documentId)
     const docRef = doc(db, "psychiatrists", documentId ?? "");
     const docSnap = await getDoc(docRef);
-
 
     if (docSnap.exists()) {
         const data = docSnap.data();
@@ -44,31 +47,29 @@ const fetchPsychiatristStatus = async (psychiatristUID: string) => {
     }
 };
 
-// Function to update the psychiatrist's status
-// const updatePsychiatristStatus = async (userId: string, status: "approved" | "pending") => {
-//     const userRef = doc(db, "psychiatrists", userId);
-//     await setDoc(userRef, { status }, { merge: true });
-//     console.log(`Status for psychiatrist with ID: ${userId} updated to ${status}`);
-// };
-
-
 const FilterUser = () => {
     const [patientView, setPatientView] = useState<boolean>(true);
     const [clientView, setClientView] = useState(true);
     const [psychiatristView, setPsychiatristView] = useState(false);
     const [userData, setUserData] = useState<UserType[]>([]);
+    const [filteredUserData, setFilteredUserData] = useState<UserType[]>([]); // State for filtered data
     const [currentPage, setCurrentPage] = useState(1);
     const [recordsPerPage] = useState(10);
     const [numPages, setNumPages] = useState(1);
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+    
+    // Client filter states
+    const [clientSearchTerm, setClientSearchTerm] = useState<string>('');
+    const [selectedAgeGroup, setSelectedAgeGroup] = useState<string>('');
+    const [selectedClientGender, setSelectedClientGender] = useState<string>('');
+    const [selectedCondition, setSelectedCondition] = useState<string>('');
 
-   
-    // const userId = "psychiatrist"; // Replace with the actual user ID
-    // getUserStatusById(userId).then((result) => {
-    //     console.log(`User ID: ${result.id}, Status: ${result.status}`);
-    // });
-    
-    
+    // Psychiatrist filter states
+    const [psychiatristSearchTerm, setPsychiatristSearchTerm] = useState<string>('');
+    const [selectedAvailability, setSelectedAvailability] = useState<string>('');
+    const [selectedLanguage, setSelectedLanguage] = useState<string>('');
+    const [selectedPsychiatristGender, setSelectedPsychiatristGender] = useState<string>('');
+    const [selectedStatus, setSelectedStatus] = useState<string>('');
 
     useEffect(() => {
         async function fetchUsers() {
@@ -79,7 +80,8 @@ const FilterUser = () => {
                     ...data,
                     id: data.uid,
                     patient: data.userType !== "psychiatrist",
-                    status: data.userType === "patient" ? '' : '', // Set default status for psychiatrists
+                    status: data.userType === "patient" ? '' : '',
+                    email: data.email || data.username || "", 
                 } as UserType;
             });
     
@@ -96,43 +98,151 @@ const FilterUser = () => {
                 );
     
                 setUserData(psychiatristStatuses);
+                setFilteredUserData(psychiatristStatuses); // Initialize filtered data
             } else {
                 setUserData(patients);
+                setFilteredUserData(patients); // Initialize filtered data
             }
     
             setNumPages(Math.ceil((clientView ? patients : psychiatrists).length / recordsPerPage));
         }
     
         fetchUsers();
+        // Reset filter states when switching views
+        if (clientView) {
+            setPsychiatristSearchTerm('');
+            setSelectedAvailability('');
+            setSelectedLanguage('');
+            setSelectedPsychiatristGender('');
+            setSelectedStatus('');
+        } else {
+            setClientSearchTerm('');
+            setSelectedAgeGroup('');
+            setSelectedClientGender('');
+            setSelectedCondition('');
+        }
     }, [recordsPerPage, clientView]);
     
+    // Apply client filters function
+    const applyClientFilters = () => {
+        let filtered = userData;
+        
+        // Apply search filter
+        if (clientSearchTerm) {
+            filtered = filtered.filter(user => 
+                (user.name && user.name.toLowerCase().includes(clientSearchTerm.toLowerCase())) || 
+                (user.email && user.email.toLowerCase().includes(clientSearchTerm.toLowerCase())) ||
+                (user.username && user.username.toLowerCase().includes(clientSearchTerm.toLowerCase()))
+            );
+        }
+        
+        // Apply age group filter
+        if (selectedAgeGroup) {
+            // Placeholder for age filtering
+            // Would need actual age data in user records
+        }
+        
+        // Apply gender filter
+        if (selectedClientGender) {
+            // Would filter by user.gender when data is available
+        }
+        
+        // Apply condition filter
+        if (selectedCondition && selectedCondition !== 'N/A') {
+            // Would filter by user.condition when data is available
+        }
+        
+        setFilteredUserData(filtered);
+        setCurrentPage(1);
+        setNumPages(Math.ceil(filtered.length / recordsPerPage));
+    };
 
-    // Original function commented out
-    /*
-    async function fetchPsychiatristStatuses(psychiatrists: UserType[]) {
-        const psychiatristStatuses = await Promise.all(
-            psychiatrists.map(async (psych) => {
-                const psychiatristDoc = await getDoc(doc(db, "psychiatrists", psych.id));
-                return { 
-                    id: psych.id, 
-                    status: psychiatristDoc.exists() ? psychiatristDoc.data().status : 'pending'
-                };
-            })
-        );
+    // Apply psychiatrist filters function
+    const applyPsychiatristFilters = () => {
+        let filtered = userData;
+        
+        // Apply search filter
+        if (psychiatristSearchTerm) {
+            filtered = filtered.filter(user => 
+                (user.name && user.name.toLowerCase().includes(psychiatristSearchTerm.toLowerCase())) || 
+                (user.email && user.email.toLowerCase().includes(psychiatristSearchTerm.toLowerCase())) ||
+                (user.username && user.username.toLowerCase().includes(psychiatristSearchTerm.toLowerCase()))
+            );
+        }
+        
+        // Apply availability filter
+        if (selectedAvailability) {
+            // Would filter by user.availability when data is available
+            // filtered = filtered.filter(user => user.availability === selectedAvailability);
+        }
+        
+        // Apply language filter
+        if (selectedLanguage) {
+            // Would filter by user.language when data is available
+            // filtered = filtered.filter(user => user.language === selectedLanguage);
+        }
+        
+        // Apply gender filter
+        if (selectedPsychiatristGender) {
+            // Would filter by user.gender when data is available
+            // filtered = filtered.filter(user => user.gender === selectedPsychiatristGender);
+        }
+        
+        // Apply status filter
+        if (selectedStatus) {
+            filtered = filtered.filter(user => 
+                user.status && user.status.toLowerCase() === selectedStatus.toLowerCase()
+            );
+        }
+        
+        setFilteredUserData(filtered);
+        setCurrentPage(1);
+        setNumPages(Math.ceil(filtered.length / recordsPerPage));
+    };
 
-        setUserData(prevUsers => 
-            prevUsers.map(user => {
-                const statusUpdate = psychiatristStatuses.find(s => s.id === user.id);
-                return statusUpdate ? { ...user, status: statusUpdate.status } : user;
-            })
-        );
-    }
-    */
+    // Handler functions for client filter changes
+    const handleClientSearchTermChange = (term: string) => {
+        setClientSearchTerm(term);
+    };
+
+    const handleAgeGroupChange = (ageGroup: string) => {
+        setSelectedAgeGroup(ageGroup);
+    };
+
+    const handleClientGenderChange = (gender: string) => {
+        setSelectedClientGender(gender);
+    };
+
+    const handleConditionChange = (condition: string) => {
+        setSelectedCondition(condition);
+    };
+
+    // Handler functions for psychiatrist filter changes
+    const handlePsychiatristSearchTermChange = (term: string) => {
+        setPsychiatristSearchTerm(term);
+    };
+
+    const handleAvailabilityChange = (availability: string) => {
+        setSelectedAvailability(availability);
+    };
+
+    const handleLanguageChange = (language: string) => {
+        setSelectedLanguage(language);
+    };
+
+    const handlePsychiatristGenderChange = (gender: string) => {
+        setSelectedPsychiatristGender(gender);
+    };
+
+    const handleStatusChange = (status: string) => {
+        setSelectedStatus(status);
+    };
 
     // Pagination logic to calculate currentRecords based on currentPage
     const indexOfLastRecord = currentPage * recordsPerPage;
     const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-    const currentRecords = userData.slice(indexOfFirstRecord, indexOfLastRecord);
+    const currentRecords = filteredUserData.slice(indexOfFirstRecord, indexOfLastRecord);
+    
     const nextPage = () => {
         if (currentPage < numPages) {
             setCurrentPage(currentPage + 1);
@@ -148,6 +258,7 @@ const FilterUser = () => {
     const handleDeleteUser = (userId) => {
         // Update the user data in the state
         setUserData((prevUserData) => prevUserData.filter((user) => user.id !== userId));
+        setFilteredUserData((prevFilteredData) => prevFilteredData.filter((user) => user.id !== userId));
         window.location.reload();
     };
 
@@ -157,34 +268,28 @@ const FilterUser = () => {
 
     const handleClick = () => {
         setPatientView((prevPatientView) => !prevPatientView);
-      };
+    };
 
     const handleClientClick = () => {
-    setClientView(true);
-    setPsychiatristView((prev) => !prev); // Toggle the state of the second button
+        setClientView(true);
+        setPsychiatristView((prev) => !prev); // Toggle the state of the second button
     };
 
     const handlePsychiatristClick = () => {
-    setClientView((prev) => !prev); // Toggle the state of the first button
-    setPsychiatristView(true);
+        setClientView((prev) => !prev); // Toggle the state of the first button
+        setPsychiatristView(true);
     };  
-
 
     return (
         <div className="flex flex-col gap-8">
             <div className="mt-5 mb-5 ml-36">
-            <button
-                className={`tab relative ${
-                    clientView ? "text-sky-700 border-b-2 border-sky-700" : "text-slate-300 border-b-2 border-slate-300"
-                } text-3xl`}
-                onClick={handleClientClick}
-            >
+                <button
+                    className={`tab relative ${
+                        clientView ? "text-sky-700 border-b-2 border-sky-700" : "text-slate-300 border-b-2 border-slate-300"
+                    } text-3xl`}
+                    onClick={handleClientClick}
+                >
                     <span className="relative z-10 ">Clients</span>
-                    {/* <span
-                        className={`block absolute left-0 bottom-0 w-full h-0.5 ${
-                        clientView ? "bg-sky-700" : "bg-slate-300"
-                        } transition-transform transform origin-bottom scale-x-2 group-hover:scale-x-100`}
-                    ></span> */}
                 </button>
 
                 <button
@@ -194,14 +299,29 @@ const FilterUser = () => {
                     onClick={handlePsychiatristClick}
                 >
                     <span className="relative z-10">Psychiatrists</span>
-                    {/* <span
-                        className={`block absolute left-0 bottom-0 w-full h-0.5 ${
-                        psychiatristView ? "bg-sky-700" : "bg-slate-300"
-                        } transition-transform transform origin-bottom scale-x-2 group-hover:scale-x-100`}
-                    ></span> */}
                 </button>
             </div>
-            {clientView ? <FilterBar onDelete={handleDeleteUser} userList={selectedUsers} /> : <FilterBarTwo onDelete={handleDeleteUser} userList={selectedUsers} />}
+            {clientView ? 
+                <FilterBar 
+                    onDelete={handleDeleteUser} 
+                    userList={selectedUsers} 
+                    onSearch={handleClientSearchTermChange}
+                    onAgeGroupChange={handleAgeGroupChange}
+                    onGenderChange={handleClientGenderChange}
+                    onConditionChange={handleConditionChange}
+                    onFilter={applyClientFilters}
+                /> : 
+                <FilterBarTwo 
+                    onDelete={handleDeleteUser} 
+                    userList={selectedUsers}
+                    onSearch={handlePsychiatristSearchTermChange}
+                    onAvailabilityChange={handleAvailabilityChange}
+                    onLanguageChange={handleLanguageChange}
+                    onGenderChange={handlePsychiatristGenderChange}
+                    onStatusChange={handleStatusChange}
+                    onFilter={applyPsychiatristFilters}
+                />
+            }
             <FilterUserTable currentRecords={currentRecords} onDelete={handleDeleteUser} selectedUsers={(users) => handleSelectedUsers(users)} />
             <div className="pagination flex items-center m-auto">
                 <div className="flex mb-5">
@@ -218,6 +338,5 @@ const FilterUser = () => {
         </div>
     );
 };
-
 
 export default FilterUser;

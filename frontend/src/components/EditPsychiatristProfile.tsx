@@ -513,7 +513,7 @@ const EditPsychiatristProfile = ({ psychiatrist }) => {
           </div>
 
           {/* Working Hours */}
-          <div className='flex flex-col gap-y-3'>
+          {/* <div className='flex flex-col gap-y-3'>
             <span className='text-lg font-semibold font-montserrat'>
               Working Hour(s) (Required)
             </span>
@@ -547,7 +547,7 @@ const EditPsychiatristProfile = ({ psychiatrist }) => {
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
 
           <div className="card-actions justify-end pt-10">
             <Cancel onClick={handleCancel} style={{ cursor: 'pointer' }} />
