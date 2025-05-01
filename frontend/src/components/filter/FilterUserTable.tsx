@@ -10,7 +10,7 @@ const FilterUserTable = ({ currentRecords, onDelete, selectedUsers }) => {
 
   const handleCheckChange = (userId, isChecked) => {
     if (isChecked) {
-      setSelectedUserIds((prevSelectedUserIds) => [...prevSelectedUserIds, userId]);
+      setSelectedUserIds((prevSelectedUserIds) => [...prevSelectedUserIds, userId] as never);
       selectedUsers((prevSelectedUserIds) => [...prevSelectedUserIds, userId]);
     } else {
       setSelectedUserIds((prevSelectedUserIds) => prevSelectedUserIds.filter((id) => id !== userId));
@@ -46,7 +46,7 @@ const FilterUserTable = ({ currentRecords, onDelete, selectedUsers }) => {
                   username={username}
                   created={"N/A"}
                   active={"N/A"}
-                  isChecked={selectedUserIds.includes(user.id)}
+                  isChecked={selectedUserIds.includes(user.id as never)}
                   onCheckChange={(isChecked) => handleCheckChange(user.id, isChecked)}
                   user_id={user.uid}
                   status={user.status}
