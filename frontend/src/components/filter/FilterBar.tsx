@@ -7,21 +7,61 @@ import { db } from "../../../firebase/firebase";
 import FilterModal from "./FilterModal"
 import okb_colors from '@/colors';
 
-const FilterBar = ({ onDelete, userList }) => {
+// Updated props interface
+interface FilterBarProps {
+    onDelete: (userId: string) => void;
+    userList: string[];
+    onSearch: (searchTerm: string) => void;
+    onAgeGroupChange: (ageGroup: string) => void;
+    onGenderChange: (gender: string) => void;
+    onConditionChange: (condition: string) => void;
+    onFilter: () => void;
+}
+
+const FilterBar = ({ 
+    onDelete, 
+    userList, 
+    onSearch, 
+    onAgeGroupChange, 
+    onGenderChange, 
+    onConditionChange, 
+    onFilter 
+}: FilterBarProps) => {
     const ageGroups = ["Below 19", "20-30", "30-40", "40-50", "Over 50"];
     const genders = ["Male", "Female"];
     const conditions = ["N/A", "Test"];
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    
+    // State to track selected filters
+    const [selectedAgeGroup, setSelectedAgeGroup] = useState<string>("");
+    const [selectedGender, setSelectedGender] = useState<string>("");
+    const [selectedCondition, setSelectedCondition] = useState<string>("");
 
     const handleSearch = (newSearchTerm: string) => {
         setSearchTerm(newSearchTerm);
+        onSearch(newSearchTerm);
+    };
+
+    const handleAgeGroupSelect = (ageGroup: string) => {
+        setSelectedAgeGroup(ageGroup);
+        onAgeGroupChange(ageGroup);
+    };
+
+    const handleGenderSelect = (gender: string) => {
+        setSelectedGender(gender);
+        onGenderChange(gender);
+    };
+
+    const handleConditionSelect = (condition: string) => {
+        setSelectedCondition(condition);
+        onConditionChange(condition);
     };
 
     const filter = () => {
-        console.log("Filter successful");
-    }
+        onFilter();
+    };
 
     async function deleteUsers(userIds: string[]) {
         for (const uid of userIds) {
@@ -32,7 +72,7 @@ const FilterBar = ({ onDelete, userList }) => {
     const handleDeleteUsers = async () => {
         try {
             await deleteUsers(userList);
-            onDelete(selectedUserIds);
+            onDelete(selectedUserIds[0]); // Assuming onDelete takes a single ID
             setSelectedUserIds([]);
         } catch (error) {
             console.error("Error deleting users:", error);
@@ -47,41 +87,61 @@ const FilterBar = ({ onDelete, userList }) => {
         setIsDeleteModalOpen(false);
     };
 
-
     return (
         <div className="flex flex-row justify-center items-center gap-2 mx-36">
             <div className="Search Name or Title">
                 <SearchBarAdmin onSearch={handleSearch} />
             </div>
 
-            <div className="h-12 px-6 py-3 bg-white rounded-lg border border-zinc-600 justify-between items-center inline-flex">
+            {/* <div className="h-12 px-6 py-3 bg-white rounded-lg border border-zinc-600 justify-between items-center inline-flex">
                 <div className="dropdown">
-                    <label tabIndex={0} className="text-neutral-400 flex gap-25 m-1 text-base font-normal">Age Group<ChevronDown color={okb_colors.med_gray} /></label>
+                    <label tabIndex={0} className="text-neutral-400 flex gap-25 m-1 text-base font-normal">
+                        {selectedAgeGroup || "Age Group"}<ChevronDown color={okb_colors.med_gray} />
+                    </label>
                     <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
-                        {ageGroups.map((e) => <li key={e}>{e}</li>)}
+                        {ageGroups.map((e) => (
+                            <li key={e} onClick={() => handleAgeGroupSelect(e)}>
+                                <a className={selectedAgeGroup === e ? "active" : ""}>{e}</a>
+                            </li>
+                        ))}
                     </ul>
                 </div>
             </div>
 
             <div className="h-12 px-6 py-3 bg-white rounded-lg border border-zinc-600 justify-between items-center inline-flex">
                 <div className="dropdown">
-                    <label tabIndex={0} className="text-neutral-400 flex gap-5 m-1 text-base font-normal">Gender<ChevronDown color={okb_colors.med_gray} /></label>
+                    <label tabIndex={0} className="text-neutral-400 flex gap-5 m-1 text-base font-normal">
+                        {selectedGender || "Gender"}<ChevronDown color={okb_colors.med_gray} />
+                    </label>
                     <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
-                        {genders.map((e) => <li key={e}>{e}</li>)}
+                        {genders.map((e) => (
+                            <li key={e} onClick={() => handleGenderSelect(e)}>
+                                <a className={selectedGender === e ? "active" : ""}>{e}</a>
+                            </li>
+                        ))}
                     </ul>
                 </div>
             </div>
 
             <div className="h-12 px-6 py-3 bg-white rounded-lg border border-zinc-600 justify-between items-center inline-flex">
                 <div className="dropdown">
-                    <label tabIndex={0} className="text-neutral-400 flex gap-5 m-1 text-base font-normal">Conditions<ChevronDown color={okb_colors.med_gray} /></label>
+                    <label tabIndex={0} className="text-neutral-400 flex gap-5 m-1 text-base font-normal">
+                        {selectedCondition || "Conditions"}<ChevronDown color={okb_colors.med_gray} />
+                    </label>
                     <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
-                        {conditions.map((e) => <li key={e}>{e}</li>)}
+                        {conditions.map((e) => (
+                            <li key={e} onClick={() => handleConditionSelect(e)}>
+                                <a className={selectedCondition === e ? "active" : ""}>{e}</a>
+                            </li>
+                        ))}
                     </ul>
                 </div>
-            </div>
+            </div> */}
 
-            <button className="px-8 py-3 bg-white rounded-2xl border border-sky-700 justify-center items-center gap-2.5 inline-flex" onClick={filter}>
+            <button 
+                className="px-8 py-3 bg-white rounded-2xl border border-sky-700 justify-center items-center gap-2.5 inline-flex" 
+                onClick={filter}
+            >
                 <div className="text-sky-700 text-base font-bold text-center">Filter</div>
             </button>
             <figure className={`cursor-pointer`} onClick={openDeleteModal}>
@@ -112,9 +172,8 @@ const FilterBar = ({ onDelete, userList }) => {
                         </div>
                     </div>
                 </div>
-            )
-            }
-        </div >
+            )}
+        </div>
     );
 }
 
