@@ -4,17 +4,24 @@ import { deleteDoc, doc } from "firebase/firestore";
 import { db } from "../../../firebase/firebase";
 import FilterCard from "./FilterCard";
 import { IUser } from "../../../src/schema";
+import { UserType } from "./FilterUser";
 
-const FilterUserTable = ({ currentRecords, onDelete, selectedUsers }) => {
-  const [selectedUserIds, setSelectedUserIds] = useState([]);
+interface FilterUserTableProps {
+  currentRecords: UserType[] | undefined;
+  onDelete: (userId: string) => void;
+  selectedUsers?: (userIds: string[]) => void;
+}
 
-  const handleCheckChange = (userId, isChecked) => {
+const FilterUserTable: React.FC<FilterUserTableProps> = ({ currentRecords, onDelete, selectedUsers }) => {
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+
+  const handleCheckChange = (userId: string, isChecked: boolean) => {
     if (isChecked) {
-      setSelectedUserIds((prevSelectedUserIds) => [...prevSelectedUserIds, userId] as never);
-      selectedUsers((prevSelectedUserIds) => [...prevSelectedUserIds, userId]);
+      setSelectedUserIds((prevSelectedUserIds: string[]) => [...prevSelectedUserIds, userId]);
+      selectedUsers?.(selectedUserIds);
     } else {
-      setSelectedUserIds((prevSelectedUserIds) => prevSelectedUserIds.filter((id) => id !== userId));
-      selectedUsers((prevSelectedUserIds) => prevSelectedUserIds.filter((id) => id !== userId));
+      setSelectedUserIds((prevSelectedUserIds: string[]) => prevSelectedUserIds.filter((id) => id !== userId));
+      selectedUsers?.(selectedUserIds);
     }
   };
 

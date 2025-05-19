@@ -18,25 +18,25 @@ interface FilterBarTwoProps {
     onFilter?: () => void;
 }
 
-const FilterBarTwo = ({ 
-    onDelete, 
-    userList, 
-    onSearch = () => {}, 
-    onAvailabilityChange = () => {}, 
-    onLanguageChange = () => {}, 
-    onGenderChange = () => {}, 
-    onStatusChange = () => {},
-    onFilter = () => {}
+const FilterBarTwo = ({
+    onDelete,
+    userList,
+    onSearch,
+    onAvailabilityChange,
+    onLanguageChange,
+    onGenderChange,
+    onStatusChange,
+    onFilter
 }: FilterBarTwoProps) => {
     const weeklyAvailability = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
     const languages = ["English", "Ga", "Twi", "Hausa"];
     const genders = ["Male", "Female"];
     const statuses = ["Pending", "Approved"];
-    
+
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    
+
     // State to track selected filters
     const [selectedAvailability, setSelectedAvailability] = useState<string>("");
     const [selectedLanguage, setSelectedLanguage] = useState<string>("");
@@ -45,31 +45,31 @@ const FilterBarTwo = ({
 
     const handleSearch = (newSearchTerm: string) => {
         setSearchTerm(newSearchTerm);
-        onSearch(newSearchTerm);
+        onSearch?.(newSearchTerm);
     };
 
     const handleAvailabilitySelect = (availability: string) => {
         setSelectedAvailability(availability);
-        onAvailabilityChange(availability);
+        onAvailabilityChange?.(availability);
     };
 
     const handleLanguageSelect = (language: string) => {
         setSelectedLanguage(language);
-        onLanguageChange(language);
+        onLanguageChange?.(language);
     };
 
     const handleGenderSelect = (gender: string) => {
         setSelectedGender(gender);
-        onGenderChange(gender);
+        onGenderChange?.(gender);
     };
 
     const handleStatusSelect = (status: string) => {
         setSelectedStatus(status);
-        onStatusChange(status);
+        onStatusChange?.(status);
     };
 
     const filter = () => {
-        onFilter();
+        onFilter?.();
     };
 
     async function deleteUsers(userIds: string[]) {
@@ -162,8 +162,8 @@ const FilterBarTwo = ({
                 </div>
             </div>
 
-            <button 
-                className="px-8 py-3 bg-white rounded-2xl border border-sky-700 justify-center items-center gap-2.5 inline-flex" 
+            <button
+                className="px-8 py-3 bg-white rounded-2xl border border-sky-700 justify-center items-center gap-2.5 inline-flex"
                 onClick={filter}
             >
                 <div className="text-sky-700 text-base font-bold text-center">Filter</div>
@@ -171,7 +171,7 @@ const FilterBarTwo = ({
             <figure className={`cursor-pointer`} onClick={openDeleteModal}>
                 <Trash />
             </figure>
-            
+
             {/* Delete Modal */}
             {isDeleteModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden overflow-y-auto">
